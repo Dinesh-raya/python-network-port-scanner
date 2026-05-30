@@ -27,7 +27,7 @@ from port_scanner import __version__
 from port_scanner.models import Port, PortState, Protocol, ScanConfig, ScanTarget
 from port_scanner.output import get_formatter
 from port_scanner.scanner import PortScanner
-from port_scanner.utils import parse_port_range, resolve_host, validate_target
+from port_scanner.utils import parse_port_range, resolve_host
 
 console = Console(stderr=True)
 output_console = Console()
@@ -197,16 +197,12 @@ def scan(
     """
     print_banner()
 
-    # Validate target
-    if not validate_target(target):
-        print_error(f"Invalid target: {target}")
-        sys.exit(1)
-
-    # Resolve hostname
+    # Resolve hostname (async)
     console.print(f"[dim]Resolving {target}...[/]")
-    ip = resolve_host(target)
-    if ip is None:
-        print_error(f"Could not resolve hostname: {target}")
+    try:
+        ip = asyncio.run(resolve_host(target))
+    except Exception as e:
+        print_error(f"Could not resolve hostname '{target}': {e}")
         sys.exit(1)
 
     console.print(f"[green]Resolved:[/] {target} -> {ip}")
@@ -260,7 +256,7 @@ def scan(
 
     # Format and display results
     formatter = get_formatter(output_format)
-    formatted = formatter.format(results)
+    formatted = formatter.format(results, scan_target)
 
     if output_format == "table":
         table = create_results_table(results, ip)
@@ -297,8 +293,6 @@ async def _run_scan(config: ScanConfig) -> list:
     Returns:
         List of ScanResult objects.
     """
-    scanner = PortScanner(config)
-
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -310,11 +304,11 @@ async def _run_scan(config: ScanConfig) -> list:
     ) as progress:
         task = progress.add_task("[cyan]Scanning ports...", total=len(config.target.ports))
 
-        def on_progress(port: Port) -> None:
-            progress.advance(task)
-            progress.update(task, description=f"[cyan]Scanning port {port.number}...")
+        def on_progress(completed: int, total: int) -> None:
+            progress.update(task, completed=completed)
 
-        results = await scanner.scan_target(on_progress=on_progress)
+        scanner = PortScanner(config, progress_callback=on_progress)
+        results = await scanner.scan()
 
     return results
 
