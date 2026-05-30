@@ -236,7 +236,7 @@ Planned enhancements for future releases:
 | **IPv6 Support** | Scan IPv6 addresses and ranges |
 | **Scan Comparison** | Diff two scans to detect changes over time |
 | **Export Formats** | Additional output formats (HTML reports, XML) |
-| **Stealth Mode** | SYN scanning and other隐蔽 techniques |
+| **Stealth Mode** | SYN scanning and other hidden techniques |
 
 Contributions welcome! See [CONTRIBUTING](CONTRIBUTING.md) for guidelines.
 
