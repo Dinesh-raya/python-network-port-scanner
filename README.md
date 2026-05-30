@@ -223,6 +223,23 @@ This project demonstrates:
 - **Comprehensive Testing** - Unit tests with pytest and mocking
 - **Modern Python** - Python 3.10+ features (match statements, union types)
 
+## Future Improvements
+
+Planned enhancements for future releases:
+
+| Feature | Description |
+|---------|-------------|
+| **CIDR Scanning** | Scan entire subnets (e.g., `192.168.1.0/24`) |
+| **Top Ports Presets** | Predefined port lists (`-p top100`, `-p common`) |
+| **Enhanced Banner Grabbing** | Deep service fingerprinting (SSH versions, HTTP headers) |
+| **Rate Limiting** | Control scan speed (`--rate 100`) to avoid detection |
+| **IPv6 Support** | Scan IPv6 addresses and ranges |
+| **Scan Comparison** | Diff two scans to detect changes over time |
+| **Export Formats** | Additional output formats (HTML reports, XML) |
+| **Stealth Mode** | SYN scanning and other隐蔽 techniques |
+
+Contributions welcome! See [CONTRIBUTING](CONTRIBUTING.md) for guidelines.
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
