@@ -66,8 +66,14 @@ class PortScanner:
             progress_callback: Optional callback ``(completed, total)`` invoked after each port scan.
         """
         self._config = config
-        self._service_db = service_db
         self._progress_callback = progress_callback
+
+        # Create default ServiceDB if none provided
+        if service_db is None and config.detect_services:
+            from port_scanner.services import ServiceDB
+            self._service_db = ServiceDB()
+        else:
+            self._service_db = service_db
         self._semaphore = asyncio.Semaphore(config.max_concurrency)
         self._completed = 0
         self._total = len(config.target.ports)
