@@ -17,6 +17,7 @@ from port_scanner.output import (
     CSVFormatter,
     JSONFormatter,
     PlainTextFormatter,
+    TableFormatter,
     get_formatter,
 )
 
@@ -177,6 +178,154 @@ class TestPlainTextFormatter:
         output = formatter.format(results, sample_target)
         assert "No open ports found" in output
 
+    def test_text_with_banner(self, sample_target: ScanTarget) -> None:
+        """Test that plain text output includes banner when present."""
+        results = [
+            ScanResult(
+                port=Port(number=80, protocol=Protocol.TCP),
+                state=PortState.OPEN,
+                service="http",
+                banner="Apache/2.4.41",
+                response_time_ms=15.5,
+            )
+        ]
+        formatter = PlainTextFormatter()
+        output = formatter.format(results, sample_target)
+        assert "Apache/2.4.41" in output
+
+    def test_text_without_service(self, sample_target: ScanTarget) -> None:
+        """Test plain text output when service is None."""
+        results = [
+            ScanResult(
+                port=Port(number=9999, protocol=Protocol.TCP),
+                state=PortState.OPEN,
+                service=None,
+                banner=None,
+                response_time_ms=5.0,
+            )
+        ]
+        formatter = PlainTextFormatter()
+        output = formatter.format(results, sample_target)
+        assert "9999/tcp" in output
+
+
+class TestTableFormatter:
+    """Tests for the TableFormatter."""
+
+    def test_table_output_not_empty(
+        self, sample_results: list[ScanResult], sample_target: ScanTarget
+    ) -> None:
+        """Test that TableFormatter produces non-empty output."""
+        formatter = TableFormatter()
+        output = formatter.format(sample_results, sample_target)
+        assert len(output) > 0
+
+    def test_table_contains_target_info(
+        self, sample_results: list[ScanResult], sample_target: ScanTarget
+    ) -> None:
+        """Test that the table contains target host and IP."""
+        formatter = TableFormatter()
+        output = formatter.format(sample_results, sample_target)
+        assert "example.com" in output
+        assert "93.184.216.34" in output
+
+    def test_table_contains_port_numbers(
+        self, sample_results: list[ScanResult], sample_target: ScanTarget
+    ) -> None:
+        """Test that the table contains port numbers."""
+        formatter = TableFormatter()
+        output = formatter.format(sample_results, sample_target)
+        assert "80" in output
+        assert "443" in output
+        assert "8080" in output
+
+    def test_table_contains_state_info(
+        self, sample_results: list[ScanResult], sample_target: ScanTarget
+    ) -> None:
+        """Test that the table contains state information."""
+        formatter = TableFormatter()
+        output = formatter.format(sample_results, sample_target)
+        assert "open" in output
+        assert "closed" in output
+
+    def test_table_contains_service_info(
+        self, sample_results: list[ScanResult], sample_target: ScanTarget
+    ) -> None:
+        """Test that the table contains service names."""
+        formatter = TableFormatter()
+        output = formatter.format(sample_results, sample_target)
+        assert "http" in output
+        assert "https" in output
+
+    def test_table_contains_summary_row(
+        self, sample_results: list[ScanResult], sample_target: ScanTarget
+    ) -> None:
+        """Test that the table contains a summary row."""
+        formatter = TableFormatter()
+        output = formatter.format(sample_results, sample_target)
+        assert "open" in output
+        assert "closed" in output
+        assert "filtered" in output
+
+    def test_table_filtered_results(self, sample_target: ScanTarget) -> None:
+        """Test table with filtered port results."""
+        results = [
+            ScanResult(
+                port=Port(number=443, protocol=Protocol.TCP),
+                state=PortState.FILTERED,
+                service=None,
+                banner=None,
+                response_time_ms=0.0,
+            )
+        ]
+        formatter = TableFormatter()
+        output = formatter.format(results, sample_target)
+        assert "filtered" in output
+
+    def test_table_empty_results(self, sample_target: ScanTarget) -> None:
+        """Test table with no results."""
+        formatter = TableFormatter()
+        output = formatter.format([], sample_target)
+        assert "example.com" in output
+
+    def test_table_banner_truncation(self, sample_target: ScanTarget) -> None:
+        """Test that long banners are handled."""
+        results = [
+            ScanResult(
+                port=Port(number=80, protocol=Protocol.TCP),
+                state=PortState.OPEN,
+                service="http",
+                banner="A" * 256,
+                response_time_ms=15.5,
+            )
+        ]
+        formatter = TableFormatter()
+        output = formatter.format(results, sample_target)
+        assert len(output) > 0
+
+    def test_table_dash_for_missing_service(
+        self, sample_target: ScanTarget
+    ) -> None:
+        """Test that missing services show as '-' in table."""
+        results = [
+            ScanResult(
+                port=Port(number=9999, protocol=Protocol.TCP),
+                state=PortState.OPEN,
+                service=None,
+                banner=None,
+                response_time_ms=5.0,
+            )
+        ]
+        formatter = TableFormatter()
+        output = formatter.format(results, sample_target)
+        assert "-" in output
+
+    def test_state_colors_mapping(self) -> None:
+        """Test that STATE_COLORS has all port states."""
+        assert PortState.OPEN in TableFormatter.STATE_COLORS
+        assert PortState.CLOSED in TableFormatter.STATE_COLORS
+        assert PortState.FILTERED in TableFormatter.STATE_COLORS
+
 
 class TestGetFormatter:
     """Tests for the get_formatter factory."""
@@ -193,6 +342,10 @@ class TestGetFormatter:
         formatter = get_formatter("text")
         assert isinstance(formatter, PlainTextFormatter)
 
+    def test_get_table_formatter(self) -> None:
+        formatter = get_formatter("table")
+        assert isinstance(formatter, TableFormatter)
+
     def test_get_unknown_formatter(self) -> None:
         with pytest.raises(ValueError, match="Unknown format"):
             get_formatter("xml")
@@ -200,3 +353,7 @@ class TestGetFormatter:
     def test_case_insensitive(self) -> None:
         formatter = get_formatter("JSON")
         assert isinstance(formatter, JSONFormatter)
+
+    def test_case_insensitive_table(self) -> None:
+        formatter = get_formatter("TABLE")
+        assert isinstance(formatter, TableFormatter)

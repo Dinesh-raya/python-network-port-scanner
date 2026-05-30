@@ -36,9 +36,9 @@ output_console = Console()
 def print_banner() -> None:
     """Display the application banner."""
     banner = (
-        "[bold cyan]Port Scanner Pro[/] v{version}\n"
+        f"[bold cyan]Port Scanner Pro[/] v{__version__}\n"
         "[dim]Professional async network port scanner[/]"
-    ).format(version=__version__)
+    )
     console.print(Panel(banner, border_style="cyan", expand=False))
 
 
