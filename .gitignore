@@ -34,3 +34,6 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+
+# Superpowers plans (internal)
+docs/superpowers/
