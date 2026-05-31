@@ -41,6 +41,11 @@ dev = [
     "ruff>=0.1.0",
 ]
 
+web = [
+    "streamlit>=1.30.0",
+    "plotly>=5.18.0",
+]
+
 [project.scripts]
 port-scanner = "port_scanner.cli:main"
 
