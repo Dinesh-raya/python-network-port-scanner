@@ -94,6 +94,58 @@ THEME_LIGHT = {
 }
 
 
+def _inject_theme_css(dark_mode: bool) -> None:
+    """Inject CSS to switch Streamlit theme at runtime."""
+    if dark_mode:
+        css = """
+        <style>
+        .stApp, [data-testid="stAppViewContainer"], .main .block-container {
+            background-color: #0e1117 !important;
+            color: #e0e0e0 !important;
+        }
+        [data-testid="stSidebar"] {
+            background-color: #1a1f2e !important;
+        }
+        [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] p,
+        [data-testid="stSidebar"] label, [data-testid="stSidebar"] span {
+            color: #e0e0e0 !important;
+        }
+        .stMarkdown, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+            color: #e0e0e0 !important;
+        }
+        [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {
+            color: #e0e0e0 !important;
+        }
+        </style>
+        """
+    else:
+        css = """
+        <style>
+        .stApp, [data-testid="stAppViewContainer"], .main .block-container {
+            background-color: #ffffff !important;
+            color: #1a1a1a !important;
+        }
+        [data-testid="stSidebar"] {
+            background-color: #f0f2f6 !important;
+        }
+        [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] p,
+        [data-testid="stSidebar"] label, [data-testid="stSidebar"] span {
+            color: #1a1a1a !important;
+        }
+        .stMarkdown, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+            color: #1a1a1a !important;
+        }
+        [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {
+            color: #1a1a1a !important;
+        }
+        [data-testid="stDataFrame"] {
+            background-color: #ffffff !important;
+        }
+        </style>
+        """
+    st.markdown(css, unsafe_allow_html=True)
+
+
 def _get_theme() -> dict:
     """Return current theme dict based on session state."""
     if st.session_state.get("dark_mode", True):
@@ -760,6 +812,7 @@ def main() -> None:
     )
 
     params = _render_sidebar()
+    _inject_theme_css(st.session_state.get("dark_mode", True))
 
     # Tabs: Scanner | History
     tab_scan, tab_history = st.tabs(["Scanner", "History"])
