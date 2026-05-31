@@ -501,8 +501,7 @@ def _render_sidebar() -> dict:
         st.markdown("## Scan Configuration")
 
         # Theme toggle
-        dark_mode = st.toggle("Dark Mode", value=True)
-        st.session_state.dark_mode = dark_mode
+        st.toggle("Dark Mode", value=True, key="dark_mode")
 
         st.markdown("---")
 
