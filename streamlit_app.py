@@ -40,7 +40,6 @@ else:
         sys.path.insert(0, str(_alt))
 
 try:
-    import plotly.graph_objects as go
     from port_scanner.models import Port, PortState, Protocol, ScanConfig, ScanTarget
     from port_scanner.output import CSVFormatter, JSONFormatter
     from port_scanner.scanner import PortScanner
@@ -371,6 +370,8 @@ def _generate_html_report(
     params: dict,
 ) -> str:
     """Generate styled HTML report with Plotly charts."""
+    import plotly.graph_objects as go
+
     open_ports = [r for r in results if r.state == PortState.OPEN]
     closed_ports = [r for r in results if r.state == PortState.CLOSED]
     filtered_ports = [r for r in results if r.state == PortState.FILTERED]
@@ -593,6 +594,8 @@ def _render_sidebar() -> dict:
 
 def _render_results(results: list, host: str, ip: str, scan_time: float) -> None:
     """Render scan results with charts."""
+    import plotly.graph_objects as go
+
     theme = _get_theme()
     open_ports = [r for r in results if r.state == PortState.OPEN]
     closed_ports = [r for r in results if r.state == PortState.CLOSED]
