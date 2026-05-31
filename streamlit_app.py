@@ -27,15 +27,27 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import plotly.graph_objects as go
 import streamlit as st
 
 # Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+_SRC_DIR = Path(__file__).parent / "src"
+if _SRC_DIR.is_dir():
+    sys.path.insert(0, str(_SRC_DIR))
+else:
+    # Fallback: try current working directory
+    _alt = Path.cwd() / "src"
+    if _alt.is_dir():
+        sys.path.insert(0, str(_alt))
 
-from port_scanner.models import Port, PortState, Protocol, ScanConfig, ScanTarget
-from port_scanner.output import CSVFormatter, JSONFormatter
-from port_scanner.scanner import PortScanner
+try:
+    import plotly.graph_objects as go
+    from port_scanner.models import Port, PortState, Protocol, ScanConfig, ScanTarget
+    from port_scanner.output import CSVFormatter, JSONFormatter
+    from port_scanner.scanner import PortScanner
+except ImportError as e:
+    st.error(f"Import error: {e}")
+    st.info("If deploying on Streamlit Cloud, ensure `requirements.txt` is in the repo root.")
+    st.stop()
 
 # ---------------------------------------------------------------------------
 # Constants
